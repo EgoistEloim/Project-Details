@@ -16,7 +16,7 @@ Focal Loss is very simple, that is, a factor is added to the original cross-entr
     3. cls+reg network: After the feature pyramid is obtained, two sub-networks (classification network + detection location regression) are used for each layer of the feature pyramid. These two sub-networks are modified by the RPN network.
     	- Similar to the RPN network, anchors are also used to generate proposals. Each layer of the feature pyramid corresponds to an anchor area. In order to produce a more dense coverage, three area ratios ![](https://www.zhihu.com/equation?tex=%5Cleft%5C%7B+2%5E0%2C+2%5E%5Cfrac%7B1%7D%7B2%7D%2C2%5E%5Cfrac%7B2%7D%7B3%7D+%5Cright%5C%7D) are added (that is, the area corresponding to the current anchor is multiplied by the corresponding ratio to form three scales), and then the anchors length and width ratio is still ![](https://www.zhihu.com/equation?tex=%5Cleft%5C%7B+1%3A2%2C+1%3A1%2C+2%3A1+%5Cright%5C%7D), so each layer of the feature pyramid corresponds to 9 kinds of anchors.
     	- The classification network of the original RPN network only distinguishes two types of foreground and background, here is changed to the number of target categories K.
-## Recognition
+### Recognition
 In recognition part, I modified and implemented [Spatial Transformer Network](https://arxiv.org/abs/1506.02025) to align photo taken from extreme angle and inserted the STN moudule in the piepline. Here I will introduce the STN:
 
 1. Localization Net: The Localisation net input is a feature map. After a number of convolution or fullly connection operations, a regression layer returns the output transformation parameter θ. The dimension of θ depends on whether the specific transformation type selected by the network is affine transformation or projection transformation. The value of θ determines the "magnitude" of the spatial transformation selected by the network. According to the paper's introduction, Localization Net can use FC layer or Conv layer to generate the transform matrix. After several architechture experiments, I found that 2 Conv layer will have the best performance. So it's Conv1+MaxPool+Relu+Conv2+MaxPool+Relu+FC1+FC2(regression layer for affine transformation).
@@ -31,3 +31,13 @@ In recognition part, I modified and implemented [Spatial Transformer Network](ht
 4.Architechture:
 
 ![](https://pic4.zhimg.com/80/v2-f89a142991f0aa025dd567ff840e9f83_720w.jpg)
+
+### Other work:
+I was in charge of training recognition part of the pipeline. So here are some tricks/tips that I used:
+1. I used warm-up learning rate to train the model.
+2. I manually find the hard case or bad case of the results and have clear idea of "What kind of cards/ What scenario we are not doing well". Then we proposed the demond for collecting the specific data to solve the problem.
+3. I write a fake photo generate code to generate fake but useful credit card image and make combine training using real image and fake image. Fake image contributed a lot to the final performance.
+4. I write profile code to check the efficiency of training and inference to find out what made the process slow.
+5. I used 64 NVIDIA 1080Ti GPUs for training.
+6. In Objects 365, I built machine prelabeling pipeline to accelerate labeling process.
+7. There are many works I was responsible for like modifying network architechture, using fast-pace experiments to check some ideas, writing documents, designing data labeling standards, designing pipeline standards, managing datasets(Objects365, credit card, car plate license).
